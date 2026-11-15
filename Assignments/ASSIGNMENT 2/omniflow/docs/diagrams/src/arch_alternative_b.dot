@@ -1,0 +1,18 @@
+digraph ALTB {graph [fontname="Helvetica" fontsize=15 bgcolor=white pad=0.2]; node [fontname="Helvetica" fontsize=14]; edge [fontname="Helvetica" fontsize=12];
+rankdir=LR; node [shape=box style="rounded,filled" fillcolor="#F2F2F2"]; compound=true;
+UI [label="Web UI / scanners"]; GW [label="API gateway"]; BR [label="Event broker\n(Kafka / RabbitMQ)" shape=cylinder];
+"Order service\n(own DB)" [fillcolor=white];
+GW -> "Order service\n(own DB)"; "Order service\n(own DB)" -> BR [dir=both];
+"Inventory service\n(own DB)" [fillcolor=white];
+GW -> "Inventory service\n(own DB)"; "Inventory service\n(own DB)" -> BR [dir=both];
+"Payment service\n(own DB)" [fillcolor=white];
+GW -> "Payment service\n(own DB)"; "Payment service\n(own DB)" -> BR [dir=both];
+"Refund service\n(own DB)" [fillcolor=white];
+GW -> "Refund service\n(own DB)"; "Refund service\n(own DB)" -> BR [dir=both];
+"Shipment service\n(own DB)" [fillcolor=white];
+GW -> "Shipment service\n(own DB)"; "Shipment service\n(own DB)" -> BR [dir=both];
+"Reporting service\n(read store)" [fillcolor=white];
+GW -> "Reporting service\n(read store)"; "Reporting service\n(read store)" -> BR [dir=both];
+UI -> GW; "Payment service\n(own DB)" -> PG [label="callbacks" dir=both]; PG [label="Payment gateway\n(external)" fillcolor=white];
+"Shipment service\n(own DB)" -> CR [dir=both]; CR [label="Courier API\n(external)" fillcolor=white];
+}

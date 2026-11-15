@@ -1,0 +1,351 @@
+title,body,labels
+FR-01: Session identity,"**Statement:** Every protected request is authenticated; the user's role is read from the server-side session, never from a request field or UI control.
+
+**Source:** Administrator, Finance reviewer  
+**Conflict:** C2  
+**Priority:** Must (risk score 20)  
+**Release:** R1
+
+**Acceptance criterion:** Given a support agent's session, when the request claims role=finance_reviewer, then the server still treats the caller as support agent; a forged token returns 401.
+
+**Traceability:** UML `UC15; User` -> `Identity & Access` -> scenarios `S6`","functional,must,release-r1"
+FR-02: Role-based authorization,"**Statement:** Each command is permitted only for roles in the permission matrix; refund approval is a separate permission from refund request.
+
+**Source:** Finance reviewer, Administrator  
+**Conflict:** C4  
+**Priority:** Must (risk score 20)  
+**Release:** R1
+
+**Acceptance criterion:** For each of the 6 roles, every prohibited critical command returns 403 and changes no data.
+
+**Traceability:** UML `UC15; User; UC08` -> `Identity & Access` -> scenarios `S6`","functional,must,release-r1"
+FR-03: Place order,"**Statement:** A customer places an order of positive integer quantities; a repeated submission with the same idempotency key returns the same order.
+
+**Source:** Customer  
+**Conflict:** C1  
+**Priority:** Must (risk score 16)  
+**Release:** R1
+
+**Acceptance criterion:** Quantity 0 or a client-supplied price is rejected; two submissions with key K create exactly one order.
+
+**Traceability:** UML `UC01; Order; OrderLine; SEQ1` -> `Order & Checkout` -> scenarios `S8; X3`","functional,must,release-r1"
+FR-04: Price and tax,"**Statement:** Totals are computed on the server as sum(qty x server price) + regional tax (half-up, integer minor units) + regional shipping; the policy version used is stored on the order.
+
+**Source:** Customer, Finance reviewer  
+**Conflict:** C1  
+**Priority:** Must (risk score 12)  
+**Release:** R1
+
+**Acceptance criterion:** Synthetic basket 2 x 2,500 in region R1 (18% tax, 5,000 shipping) totals 10,900 and stores policy version 1.
+
+**Traceability:** UML `UC01; Order; RegionalPolicy` -> `Order & Checkout; Regional Policy` -> scenarios `S8`","functional,must,release-r1"
+FR-05: Atomic stock reservation,"**Statement:** Stock is reserved in the same transaction that creates the order, by a conditional update that succeeds only if free stock >= quantity; the reservation expires after 15 minutes.
+
+**Source:** Customer, Picker  
+**Conflict:** C1  
+**Priority:** Must (risk score 20)  
+**Release:** R1
+
+**Acceptance criterion:** With 1 unit left and 12 concurrent buyers, exactly 1 order is created and 11 buyers receive 'out of stock'.
+
+**Traceability:** UML `UC01; StockItem; Reservation` -> `Stock & Reservation; PostgreSQL` -> scenarios `S1`","functional,must,release-r1"
+FR-06: Reservation expiry,"**Statement:** An unpaid order's reservation is released exactly once after expiry and the order becomes Cancelled (reason Expired).
+
+**Source:** Picker, Store manager  
+**Conflict:** C1  
+**Priority:** Should (risk score 12)  
+**Release:** R1
+
+**Acceptance criterion:** Running the expiry job twice releases the reserved units once; free stock equals on-hand.
+
+**Traceability:** UML `Reservation; STM1` -> `Stock & Reservation` -> scenarios `S7`","functional,should,release-r1"
+"FR-07: Verified, idempotent payment confirmation","**Statement:** Only a callback with a valid signature and matching amount can mark an order Paid; one (gateway id, event id) creates at most one payment, one audit entry and one shipment intent.
+
+**Source:** Finance reviewer, Engineering  
+**Conflict:** C3  
+**Priority:** Must (risk score 25)  
+**Release:** R1
+
+**Acceptance criterion:** The same callback sent 10 times sequentially and 10 times concurrently yields 1 payment, 1 intent, 1 'paid' audit entry.
+
+**Traceability:** UML `UC03; PaymentEvent; SEQ1` -> `Payment Callback; PostgreSQL` -> scenarios `S2; S8`","functional,must,release-r1"
+FR-08: Payment that cannot be fulfilled,"**Statement:** A verified payment for an order that is expired, customer-cancelled or already paid is never ignored: an expired order is recovered by re-reserving if stock remains; otherwise a system refund request is opened (approval still required).
+
+**Source:** Finance reviewer  
+**Conflict:** C3  
+**Priority:** Must (risk score 15)  
+**Release:** R1
+
+**Acceptance criterion:** Late payment with the unit resold leaves stock unchanged and opens one Requested refund by 'system'; with stock available the order becomes Paid.
+
+**Traceability:** UML `UC03; STM1; RefundRequest` -> `Payment Callback; Refund Approval` -> scenarios `S7`","functional,must,release-r1"
+FR-09: Guarded order lifecycle,"**Statement:** Orders follow Placed, Paid, Packed, Dispatched, Delivered, Closed; Cancelled only before payment (plus late-payment recovery of an expired order); every command carries the expected version.
+
+**Source:** Engineering  
+**Conflict:** C3  
+**Priority:** Must (risk score 16)  
+**Release:** R1
+
+**Acceptance criterion:** Any jump (e.g. Placed to Dispatched) is rejected; a second picker using a stale version is rejected.
+
+**Traceability:** UML `STM1; Order` -> `Order & Checkout; Fulfilment & Tracking` -> scenarios `S4`","functional,must,release-r1"
+FR-10: Pick list and pick confirmation,"**Statement:** A picker sees only paid orders of their own region and confirms picks, moving the order to Packed.
+
+**Source:** Picker  
+**Conflict:** C5  
+**Priority:** Should (risk score 9)  
+**Release:** R1
+
+**Acceptance criterion:** A picker of another region receives 403 for the order; own-region paid order appears on the pick list.
+
+**Traceability:** UML `UC04; Order` -> `Fulfilment & Tracking` -> scenarios `S4`","functional,should,release-r1"
+FR-11: Dispatch guard and deadline,"**Statement:** Dispatch needs state Packed and a stored payment record; on dispatch reserved units become consumed stock; dispatch is due 24 h (UTC) after payment.
+
+**Source:** Picker, Store manager  
+**Conflict:** C1  
+**Priority:** Must (risk score 15)  
+**Release:** R1
+
+**Acceptance criterion:** Dispatch of a Placed or Paid-not-picked order is rejected and leaves state and stock unchanged; due time equals paid time + 24 h.
+
+**Traceability:** UML `UC05; STM1; StockItem` -> `Fulfilment & Tracking; Stock & Reservation` -> scenarios `S4`","functional,must,release-r1"
+FR-12: Durable shipment booking,"**Statement:** Courier booking is recorded as an integration intent in the order transaction; the worker reconciles by correlation key before creating, retries with back-off and dead-letters after 5 attempts.
+
+**Source:** Engineering, Customer  
+**Conflict:** C3  
+**Priority:** Must (risk score 16)  
+**Release:** R1
+
+**Acceptance criterion:** After a courier outage then a timeout-after-create, exactly one courier shipment exists and the order keeps its Paid state throughout.
+
+**Traceability:** UML `UC12; IntegrationIntent; SEQ1` -> `Integration Worker; PostgreSQL` -> scenarios `S5`","functional,must,release-r1"
+FR-13: Customer tracking,"**Statement:** A customer sees status, tracking id and dispatch date of their own orders only.
+
+**Source:** Customer  
+**Conflict:** C2  
+**Priority:** Should (risk score 9)  
+**Release:** R1
+
+**Acceptance criterion:** Customer B requesting customer A's order receives 403.
+
+**Traceability:** UML `UC02; Order` -> `Order & Checkout` -> scenarios `S6`","functional,should,release-r1"
+FR-14: Masked support view,"**Statement:** A support agent sees status, refund status and masked contact details, never payment records.
+
+**Source:** Support agent  
+**Conflict:** C2  
+**Priority:** Must (risk score 16)  
+**Release:** R1
+
+**Acceptance criterion:** Support response contains 'a***@e***' not the e-mail, and no 'payments' field.
+
+**Traceability:** UML `UC06; Order; RefundRequest` -> `Order & Checkout; Identity & Access` -> scenarios `S6`","functional,must,release-r1"
+FR-15: Return and refund request,"**Statement:** A customer or support agent can request a refund only for a Delivered order and up to the unrefunded total.
+
+**Source:** Support agent, Customer  
+**Conflict:** C4  
+**Priority:** Must (risk score 12)  
+**Release:** R1
+
+**Acceptance criterion:** Request on a non-delivered order or above the order total is rejected.
+
+**Traceability:** UML `UC07; RefundRequest; STM2` -> `Refund Approval` -> scenarios `S3`","functional,must,release-r1"
+FR-16: Amount-based refund approval,"**Statement:** Approval is judged against the regional limit in force at approval time: up to the limit a finance reviewer or store manager may approve, above it only a finance reviewer; the requester can never approve.
+
+**Source:** Finance reviewer, Store manager  
+**Conflict:** C4  
+**Priority:** Must (risk score 20)  
+**Release:** R1
+
+**Acceptance criterion:** Manager approval of an amount above the limit returns 403; the same approval queued before the limit was lowered is rejected on sync.
+
+**Traceability:** UML `UC08; RefundRequest; STM2; RegionalPolicy` -> `Refund Approval; Identity & Access` -> scenarios `S6; X2`","functional,must,release-r1"
+FR-17: Approval-gated refund execution,"**Statement:** Only an Approved or Failed (previously approved) refund can be executed; a gateway failure marks it Failed without closing the order or writing the ledger; retry reuses the approval and the gateway idempotency key.
+
+**Source:** Finance reviewer  
+**Conflict:** C4  
+**Priority:** Must (risk score 15)  
+**Release:** R1
+
+**Acceptance criterion:** Execution of a Requested refund is rejected (also by a database trigger); after one gateway failure the retry succeeds with one ledger row.
+
+**Traceability:** UML `UC09; STM2; SEQ2; RefundRequest` -> `Refund Approval; Integration Worker` -> scenarios `S3`","functional,must,release-r1"
+FR-18: Audit trail,"**Statement:** Every accepted command writes one audit entry (actor, time, action, order) in the same transaction.
+
+**Source:** Finance reviewer, Administrator  
+**Conflict:** C4  
+**Priority:** Must (risk score 12)  
+**Release:** R1
+
+**Acceptance criterion:** After the duplicate-callback scenario exactly one 'order.paid' entry exists.
+
+**Traceability:** UML `AuditEvent` -> `PostgreSQL` -> scenarios `S2`","functional,must,release-r1"
+FR-19: Consolidated reports,"**Statement:** Store managers and administrators view sales, stock and refund summaries read from summary tables refreshed on a schedule; low-stock is a fixed threshold, not a forecast.
+
+**Source:** Store manager  
+**Conflict:** C6  
+**Priority:** Should (risk score 9)  
+**Release:** R1
+
+**Acceptance criterion:** After refresh, summary totals equal raw aggregates; a customer calling the report returns 403.
+
+**Traceability:** UML `UC10` -> `Reporting` -> scenarios `X5`","functional,should,release-r1"
+FR-20: Versioned regional policy,"**Statement:** An administrator creates new versions of a region's tax, shipping, refund limit and return window; old versions are kept.
+
+**Source:** Administrator  
+**Conflict:** C4  
+**Priority:** Should (risk score 9)  
+**Release:** R1
+
+**Acceptance criterion:** Changing the limit creates version 2; orders keep the version they were priced with.
+
+**Traceability:** UML `UC11; RegionalPolicy` -> `Regional Policy` -> scenarios `X2`","functional,should,release-r1"
+FR-21: Offline scanner buffer,"**Statement:** A scanner node buffers events with node id, unique event id, observation time, policy version and schema version in a bounded queue and refuses new events when full rather than dropping any.
+
+**Source:** Picker  
+**Conflict:** C7  
+**Priority:** Must (risk score 12)  
+**Release:** R2
+
+**Acceptance criterion:** The 1,001st event on a 1,000-capacity node raises 'buffer full' and the buffer still holds 1,000 events.
+
+**Traceability:** UML `UC13; ScanEvent; SEQ3` -> `Scan Ingest` -> scenarios `X1`","functional,must,release-r2"
+FR-22: Scan-event deduplication,"**Statement:** The server applies at most one stock change per (node id, event id); replays are acknowledged and ignored.
+
+**Source:** Picker, Engineering  
+**Conflict:** C7  
+**Priority:** Must (risk score 16)  
+**Release:** R2
+
+**Acceptance criterion:** A 500-event batch replayed after a lost acknowledgement changes stock by 0 the second time.
+
+**Traceability:** UML `UC13; ScanEvent; SEQ3` -> `Scan Ingest; PostgreSQL` -> scenarios `X1`","functional,must,release-r2"
+FR-23: Human-approved stock corrections,"**Statement:** Negative scan adjustments are held for a store manager; a correction can never reduce on-hand below reserved units.
+
+**Source:** Store manager  
+**Conflict:** C7  
+**Priority:** Must (risk score 12)  
+**Release:** R2
+
+**Acceptance criterion:** A picker cannot approve; a manager's approval that would drop below reserved is rejected.
+
+**Traceability:** UML `UC14; ScanEvent; StockItem` -> `Scan Ingest; Stock & Reservation` -> scenarios `X4`","functional,must,release-r2"
+FR-24: Queued approvals stay pending,"**Statement:** An approval captured offline is displayed as 'queued - not yet validated' and is re-validated by the server (identity, role, current policy) on reconnect.
+
+**Source:** Finance reviewer  
+**Conflict:** C7  
+**Priority:** Must (risk score 15)  
+**Release:** R2
+
+**Acceptance criterion:** Before sync the display never reads 'Approved'; after the limit is lowered the server rejects a manager's queued approval.
+
+**Traceability:** UML `UC08; SEQ3; STM2` -> `Refund Approval; Identity & Access` -> scenarios `X2`","functional,must,release-r2"
+FR-25: Stale observations,"**Statement:** Scan events older than 24 h at receipt are flagged stale and never presented as current live counts.
+
+**Source:** Store manager  
+**Conflict:** C7  
+**Priority:** Should (risk score 9)  
+**Release:** R2
+
+**Acceptance criterion:** An event observed 30 h earlier is stored with stale=1.
+
+**Traceability:** UML `ScanEvent` -> `Scan Ingest` -> scenarios `X4`","functional,should,release-r2"
+NFR-01: Checkout response time,"**Statement:** Under 50 concurrent synthetic users on the reference host (2 vCPU, 4 GB), after a 1-minute warm-up and over a 5-minute run, p95 checkout latency <= 800 ms with < 1% errors.
+
+**Source:** Customer  
+**Conflict:** C1  
+**Priority:** Must (risk score 12)  
+**Release:** R1
+
+**Acceptance criterion:** Load-test report records host, dataset size, warm-up, duration and p95.
+
+**Traceability:** UML `UC01` -> `Order & Checkout; PostgreSQL` -> scenarios `P1`","non-functional,must,release-r1"
+NFR-02: Consistency,"**Statement:** In a trial of 1,000 concurrent attempts on a single last unit and 1,000 repeats of one payment callback there is no oversell, no negative stock and exactly one payment.
+
+**Source:** Engineering, Picker  
+**Conflict:** C1  
+**Priority:** Must (risk score 20)  
+**Release:** R1
+
+**Acceptance criterion:** Zero oversold units and zero duplicate payments in the trial.
+
+**Traceability:** UML `UC01; UC03; StockItem; PaymentEvent` -> `Stock & Reservation; Payment Callback; PostgreSQL` -> scenarios `S1; S2; P6`","non-functional,must,release-r1"
+NFR-03: Local availability under partner failure,"**Statement:** While the courier API is unavailable for 60 minutes, 100% of valid payment callbacks are still recorded and acknowledged within 2 s (p95); no order is lost.
+
+**Source:** Customer, Engineering  
+**Conflict:** C3  
+**Priority:** Must (risk score 16)  
+**Release:** R1
+
+**Acceptance criterion:** Count of recorded callbacks equals callbacks sent; intents remain Pending/Retry.
+
+**Traceability:** UML `SEQ1; IntegrationIntent` -> `Integration Worker; Payment Callback` -> scenarios `S5`","non-functional,must,release-r1"
+NFR-04: Recovery,"**Statement:** Assumed targets: recovery within 30 minutes (RTO) and loss of at most 15 minutes of data (RPO) in a test environment.
+
+**Source:** Store manager  
+**Conflict:** C3  
+**Priority:** Should (risk score 8)  
+**Release:** R1
+
+**Acceptance criterion:** A restore drill meets both targets and is recorded.
+
+**Traceability:** UML `` -> `PostgreSQL` -> scenarios `P2`","non-functional,should,release-r1"
+NFR-05: Security,"**Statement:** TLS for all external traffic; callback signature verification; no card numbers stored; secrets outside the repository; all six roles tested against permitted and prohibited critical actions.
+
+**Source:** Administrator, Finance reviewer  
+**Conflict:** C2  
+**Priority:** Must (risk score 15)  
+**Release:** R1
+
+**Acceptance criterion:** Role matrix test passes; repository scan finds no secrets or card numbers.
+
+**Traceability:** UML `UC15; UC03` -> `Identity & Access; Payment Callback` -> scenarios `S6; S8`","non-functional,must,release-r1"
+NFR-06: Usability and accessibility,"**Statement:** The purchase and tracking journey is operable by keyboard only; status is text, not colour alone; a support agent finds an order's status within 3 interactions and 30 seconds.
+
+**Source:** Customer, Support agent  
+**Conflict:** C2  
+**Priority:** Should (risk score 9)  
+**Release:** R1
+
+**Acceptance criterion:** Keyboard walkthrough passes; 3 of 3 test users meet the time target.
+
+**Traceability:** UML `UC02; UC06` -> `Order & Checkout` -> scenarios `P3`","non-functional,should,release-r1"
+NFR-07: Portability and maintainability,"**Statement:** A tagged commit plus documented configuration reproduces the test suite and the demo on a clean supported host; CI runs all tests on every push.
+
+**Source:** Engineering  
+**Conflict:** C3  
+**Priority:** Should (risk score 6)  
+**Release:** R1
+
+**Acceptance criterion:** CI is green on a fresh clone.
+
+**Traceability:** UML `` -> `PostgreSQL` -> scenarios `P7`","non-functional,should,release-r1"
+NFR-08: Privacy,"**Statement:** Support-agent and picker responses contain no payment data and no unmasked contact details.
+
+**Source:** Support agent, Administrator  
+**Conflict:** C2  
+**Priority:** Must (risk score 12)  
+**Release:** R1
+
+**Acceptance criterion:** Field-level response checks pass for both roles.
+
+**Traceability:** UML `UC06` -> `Order & Checkout; Fulfilment & Tracking` -> scenarios `S6`","non-functional,must,release-r1"
+NFR-09: Scalability (expansion),"**Statement:** At 500 simultaneous users (about 150 requests/s peak) and 1,000 stock/payment/scan events per minute (about 83/s at a 5x peak), checkout p95 <= 1.2 s and scan-queue drain lag <= 60 s. Design assumption, not measured capacity.
+
+**Source:** Store manager  
+**Conflict:** C6  
+**Priority:** Must (risk score 12)  
+**Release:** R2
+
+**Acceptance criterion:** Expansion load-test report records p95 and drain lag.
+
+**Traceability:** UML `UC13; UC01` -> `Scan Ingest; Order & Checkout; Reporting` -> scenarios `X1; X3; P4`","non-functional,must,release-r2"
+NFR-10: Report freshness and isolation,"**Statement:** Reports are at most 5 minutes old and do not raise checkout p95 by more than 10% while a report refresh runs.
+
+**Source:** Store manager  
+**Conflict:** C6  
+**Priority:** Should (risk score 9)  
+**Release:** R2
+
+**Acceptance criterion:** Interference test shows <= 10% change.
+
+**Traceability:** UML `UC10` -> `Reporting` -> scenarios `X5; P5`","non-functional,should,release-r2"

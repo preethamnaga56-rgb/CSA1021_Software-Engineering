@@ -1,0 +1,6 @@
+requirements: 35  executed scenario groups: 13
+PROBLEM: NFR-07: no validation scenario
+NOTE:    NFR-01: only pending (not executed) scenarios ['P1']
+NOTE:    NFR-04: only pending (not executed) scenarios ['P2']
+NOTE:    NFR-06: only pending (not executed) scenarios ['P3']
+RESULT: FAIL (1 problems, 3 notes)

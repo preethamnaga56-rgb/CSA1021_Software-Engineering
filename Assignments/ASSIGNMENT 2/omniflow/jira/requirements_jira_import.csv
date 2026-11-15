@@ -1,0 +1,176 @@
+Summary,Issue Type,Priority,Description,Labels,Custom field (Requirement ID)
+FR-01 Session identity,Story,Highest,"Every protected request is authenticated; the user's role is read from the server-side session, never from a request field or UI control.
+
+Source: Administrator, Finance reviewer
+Acceptance: Given a support agent's session, when the request claims role=finance_reviewer, then the server still treats the caller as support agent; a forged token returns 401.
+Trace: UC15; User | Identity & Access | S6",functional release-r1 must,FR-01
+FR-02 Role-based authorization,Story,Highest,"Each command is permitted only for roles in the permission matrix; refund approval is a separate permission from refund request.
+
+Source: Finance reviewer, Administrator
+Acceptance: For each of the 6 roles, every prohibited critical command returns 403 and changes no data.
+Trace: UC15; User; UC08 | Identity & Access | S6",functional release-r1 must,FR-02
+FR-03 Place order,Story,Highest,"A customer places an order of positive integer quantities; a repeated submission with the same idempotency key returns the same order.
+
+Source: Customer
+Acceptance: Quantity 0 or a client-supplied price is rejected; two submissions with key K create exactly one order.
+Trace: UC01; Order; OrderLine; SEQ1 | Order & Checkout | S8; X3",functional release-r1 must,FR-03
+FR-04 Price and tax,Story,Highest,"Totals are computed on the server as sum(qty x server price) + regional tax (half-up, integer minor units) + regional shipping; the policy version used is stored on the order.
+
+Source: Customer, Finance reviewer
+Acceptance: Synthetic basket 2 x 2,500 in region R1 (18% tax, 5,000 shipping) totals 10,900 and stores policy version 1.
+Trace: UC01; Order; RegionalPolicy | Order & Checkout; Regional Policy | S8",functional release-r1 must,FR-04
+FR-05 Atomic stock reservation,Story,Highest,"Stock is reserved in the same transaction that creates the order, by a conditional update that succeeds only if free stock >= quantity; the reservation expires after 15 minutes.
+
+Source: Customer, Picker
+Acceptance: With 1 unit left and 12 concurrent buyers, exactly 1 order is created and 11 buyers receive 'out of stock'.
+Trace: UC01; StockItem; Reservation | Stock & Reservation; PostgreSQL | S1",functional release-r1 must,FR-05
+FR-06 Reservation expiry,Story,High,"An unpaid order's reservation is released exactly once after expiry and the order becomes Cancelled (reason Expired).
+
+Source: Picker, Store manager
+Acceptance: Running the expiry job twice releases the reserved units once; free stock equals on-hand.
+Trace: Reservation; STM1 | Stock & Reservation | S7",functional release-r1 should,FR-06
+"FR-07 Verified, idempotent payment confirmation",Story,Highest,"Only a callback with a valid signature and matching amount can mark an order Paid; one (gateway id, event id) creates at most one payment, one audit entry and one shipment intent.
+
+Source: Finance reviewer, Engineering
+Acceptance: The same callback sent 10 times sequentially and 10 times concurrently yields 1 payment, 1 intent, 1 'paid' audit entry.
+Trace: UC03; PaymentEvent; SEQ1 | Payment Callback; PostgreSQL | S2; S8",functional release-r1 must,FR-07
+FR-08 Payment that cannot be fulfilled,Story,Highest,"A verified payment for an order that is expired, customer-cancelled or already paid is never ignored: an expired order is recovered by re-reserving if stock remains; otherwise a system refund request is opened (approval still required).
+
+Source: Finance reviewer
+Acceptance: Late payment with the unit resold leaves stock unchanged and opens one Requested refund by 'system'; with stock available the order becomes Paid.
+Trace: UC03; STM1; RefundRequest | Payment Callback; Refund Approval | S7",functional release-r1 must,FR-08
+FR-09 Guarded order lifecycle,Story,Highest,"Orders follow Placed, Paid, Packed, Dispatched, Delivered, Closed; Cancelled only before payment (plus late-payment recovery of an expired order); every command carries the expected version.
+
+Source: Engineering
+Acceptance: Any jump (e.g. Placed to Dispatched) is rejected; a second picker using a stale version is rejected.
+Trace: STM1; Order | Order & Checkout; Fulfilment & Tracking | S4",functional release-r1 must,FR-09
+FR-10 Pick list and pick confirmation,Story,High,"A picker sees only paid orders of their own region and confirms picks, moving the order to Packed.
+
+Source: Picker
+Acceptance: A picker of another region receives 403 for the order; own-region paid order appears on the pick list.
+Trace: UC04; Order | Fulfilment & Tracking | S4",functional release-r1 should,FR-10
+FR-11 Dispatch guard and deadline,Story,Highest,"Dispatch needs state Packed and a stored payment record; on dispatch reserved units become consumed stock; dispatch is due 24 h (UTC) after payment.
+
+Source: Picker, Store manager
+Acceptance: Dispatch of a Placed or Paid-not-picked order is rejected and leaves state and stock unchanged; due time equals paid time + 24 h.
+Trace: UC05; STM1; StockItem | Fulfilment & Tracking; Stock & Reservation | S4",functional release-r1 must,FR-11
+FR-12 Durable shipment booking,Story,Highest,"Courier booking is recorded as an integration intent in the order transaction; the worker reconciles by correlation key before creating, retries with back-off and dead-letters after 5 attempts.
+
+Source: Engineering, Customer
+Acceptance: After a courier outage then a timeout-after-create, exactly one courier shipment exists and the order keeps its Paid state throughout.
+Trace: UC12; IntegrationIntent; SEQ1 | Integration Worker; PostgreSQL | S5",functional release-r1 must,FR-12
+FR-13 Customer tracking,Story,High,"A customer sees status, tracking id and dispatch date of their own orders only.
+
+Source: Customer
+Acceptance: Customer B requesting customer A's order receives 403.
+Trace: UC02; Order | Order & Checkout | S6",functional release-r1 should,FR-13
+FR-14 Masked support view,Story,Highest,"A support agent sees status, refund status and masked contact details, never payment records.
+
+Source: Support agent
+Acceptance: Support response contains 'a***@e***' not the e-mail, and no 'payments' field.
+Trace: UC06; Order; RefundRequest | Order & Checkout; Identity & Access | S6",functional release-r1 must,FR-14
+FR-15 Return and refund request,Story,Highest,"A customer or support agent can request a refund only for a Delivered order and up to the unrefunded total.
+
+Source: Support agent, Customer
+Acceptance: Request on a non-delivered order or above the order total is rejected.
+Trace: UC07; RefundRequest; STM2 | Refund Approval | S3",functional release-r1 must,FR-15
+FR-16 Amount-based refund approval,Story,Highest,"Approval is judged against the regional limit in force at approval time: up to the limit a finance reviewer or store manager may approve, above it only a finance reviewer; the requester can never approve.
+
+Source: Finance reviewer, Store manager
+Acceptance: Manager approval of an amount above the limit returns 403; the same approval queued before the limit was lowered is rejected on sync.
+Trace: UC08; RefundRequest; STM2; RegionalPolicy | Refund Approval; Identity & Access | S6; X2",functional release-r1 must,FR-16
+FR-17 Approval-gated refund execution,Story,Highest,"Only an Approved or Failed (previously approved) refund can be executed; a gateway failure marks it Failed without closing the order or writing the ledger; retry reuses the approval and the gateway idempotency key.
+
+Source: Finance reviewer
+Acceptance: Execution of a Requested refund is rejected (also by a database trigger); after one gateway failure the retry succeeds with one ledger row.
+Trace: UC09; STM2; SEQ2; RefundRequest | Refund Approval; Integration Worker | S3",functional release-r1 must,FR-17
+FR-18 Audit trail,Story,Highest,"Every accepted command writes one audit entry (actor, time, action, order) in the same transaction.
+
+Source: Finance reviewer, Administrator
+Acceptance: After the duplicate-callback scenario exactly one 'order.paid' entry exists.
+Trace: AuditEvent | PostgreSQL | S2",functional release-r1 must,FR-18
+FR-19 Consolidated reports,Story,High,"Store managers and administrators view sales, stock and refund summaries read from summary tables refreshed on a schedule; low-stock is a fixed threshold, not a forecast.
+
+Source: Store manager
+Acceptance: After refresh, summary totals equal raw aggregates; a customer calling the report returns 403.
+Trace: UC10 | Reporting | X5",functional release-r1 should,FR-19
+FR-20 Versioned regional policy,Story,High,"An administrator creates new versions of a region's tax, shipping, refund limit and return window; old versions are kept.
+
+Source: Administrator
+Acceptance: Changing the limit creates version 2; orders keep the version they were priced with.
+Trace: UC11; RegionalPolicy | Regional Policy | X2",functional release-r1 should,FR-20
+FR-21 Offline scanner buffer,Story,Highest,"A scanner node buffers events with node id, unique event id, observation time, policy version and schema version in a bounded queue and refuses new events when full rather than dropping any.
+
+Source: Picker
+Acceptance: The 1,001st event on a 1,000-capacity node raises 'buffer full' and the buffer still holds 1,000 events.
+Trace: UC13; ScanEvent; SEQ3 | Scan Ingest | X1",functional release-r2 must,FR-21
+FR-22 Scan-event deduplication,Story,Highest,"The server applies at most one stock change per (node id, event id); replays are acknowledged and ignored.
+
+Source: Picker, Engineering
+Acceptance: A 500-event batch replayed after a lost acknowledgement changes stock by 0 the second time.
+Trace: UC13; ScanEvent; SEQ3 | Scan Ingest; PostgreSQL | X1",functional release-r2 must,FR-22
+FR-23 Human-approved stock corrections,Story,Highest,"Negative scan adjustments are held for a store manager; a correction can never reduce on-hand below reserved units.
+
+Source: Store manager
+Acceptance: A picker cannot approve; a manager's approval that would drop below reserved is rejected.
+Trace: UC14; ScanEvent; StockItem | Scan Ingest; Stock & Reservation | X4",functional release-r2 must,FR-23
+FR-24 Queued approvals stay pending,Story,Highest,"An approval captured offline is displayed as 'queued - not yet validated' and is re-validated by the server (identity, role, current policy) on reconnect.
+
+Source: Finance reviewer
+Acceptance: Before sync the display never reads 'Approved'; after the limit is lowered the server rejects a manager's queued approval.
+Trace: UC08; SEQ3; STM2 | Refund Approval; Identity & Access | X2",functional release-r2 must,FR-24
+FR-25 Stale observations,Story,High,"Scan events older than 24 h at receipt are flagged stale and never presented as current live counts.
+
+Source: Store manager
+Acceptance: An event observed 30 h earlier is stored with stale=1.
+Trace: ScanEvent | Scan Ingest | X4",functional release-r2 should,FR-25
+NFR-01 Checkout response time,Task,Highest,"Under 50 concurrent synthetic users on the reference host (2 vCPU, 4 GB), after a 1-minute warm-up and over a 5-minute run, p95 checkout latency <= 800 ms with < 1% errors.
+
+Source: Customer
+Acceptance: Load-test report records host, dataset size, warm-up, duration and p95.
+Trace: UC01 | Order & Checkout; PostgreSQL | P1",nonfunctional release-r1 must,NFR-01
+NFR-02 Consistency,Task,Highest,"In a trial of 1,000 concurrent attempts on a single last unit and 1,000 repeats of one payment callback there is no oversell, no negative stock and exactly one payment.
+
+Source: Engineering, Picker
+Acceptance: Zero oversold units and zero duplicate payments in the trial.
+Trace: UC01; UC03; StockItem; PaymentEvent | Stock & Reservation; Payment Callback; PostgreSQL | S1; S2; P6",nonfunctional release-r1 must,NFR-02
+NFR-03 Local availability under partner failure,Task,Highest,"While the courier API is unavailable for 60 minutes, 100% of valid payment callbacks are still recorded and acknowledged within 2 s (p95); no order is lost.
+
+Source: Customer, Engineering
+Acceptance: Count of recorded callbacks equals callbacks sent; intents remain Pending/Retry.
+Trace: SEQ1; IntegrationIntent | Integration Worker; Payment Callback | S5",nonfunctional release-r1 must,NFR-03
+NFR-04 Recovery,Task,High,"Assumed targets: recovery within 30 minutes (RTO) and loss of at most 15 minutes of data (RPO) in a test environment.
+
+Source: Store manager
+Acceptance: A restore drill meets both targets and is recorded.
+Trace:  | PostgreSQL | P2",nonfunctional release-r1 should,NFR-04
+NFR-05 Security,Task,Highest,"TLS for all external traffic; callback signature verification; no card numbers stored; secrets outside the repository; all six roles tested against permitted and prohibited critical actions.
+
+Source: Administrator, Finance reviewer
+Acceptance: Role matrix test passes; repository scan finds no secrets or card numbers.
+Trace: UC15; UC03 | Identity & Access; Payment Callback | S6; S8",nonfunctional release-r1 must,NFR-05
+NFR-06 Usability and accessibility,Task,High,"The purchase and tracking journey is operable by keyboard only; status is text, not colour alone; a support agent finds an order's status within 3 interactions and 30 seconds.
+
+Source: Customer, Support agent
+Acceptance: Keyboard walkthrough passes; 3 of 3 test users meet the time target.
+Trace: UC02; UC06 | Order & Checkout | P3",nonfunctional release-r1 should,NFR-06
+NFR-07 Portability and maintainability,Task,High,"A tagged commit plus documented configuration reproduces the test suite and the demo on a clean supported host; CI runs all tests on every push.
+
+Source: Engineering
+Acceptance: CI is green on a fresh clone.
+Trace:  | PostgreSQL | P7",nonfunctional release-r1 should,NFR-07
+NFR-08 Privacy,Task,Highest,"Support-agent and picker responses contain no payment data and no unmasked contact details.
+
+Source: Support agent, Administrator
+Acceptance: Field-level response checks pass for both roles.
+Trace: UC06 | Order & Checkout; Fulfilment & Tracking | S6",nonfunctional release-r1 must,NFR-08
+NFR-09 Scalability (expansion),Task,Highest,"At 500 simultaneous users (about 150 requests/s peak) and 1,000 stock/payment/scan events per minute (about 83/s at a 5x peak), checkout p95 <= 1.2 s and scan-queue drain lag <= 60 s. Design assumption, not measured capacity.
+
+Source: Store manager
+Acceptance: Expansion load-test report records p95 and drain lag.
+Trace: UC13; UC01 | Scan Ingest; Order & Checkout; Reporting | X1; X3; P4",nonfunctional release-r2 must,NFR-09
+NFR-10 Report freshness and isolation,Task,High,"Reports are at most 5 minutes old and do not raise checkout p95 by more than 10% while a report refresh runs.
+
+Source: Store manager
+Acceptance: Interference test shows <= 10% change.
+Trace: UC10 | Reporting | X5; P5",nonfunctional release-r2 should,NFR-10

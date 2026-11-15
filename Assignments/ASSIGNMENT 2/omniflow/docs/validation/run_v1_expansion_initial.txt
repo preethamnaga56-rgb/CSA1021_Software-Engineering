@@ -1,0 +1,21 @@
+test_X1_bounded_buffer_refuses_instead_of_dropping ... ok
+test_X1_local_timing_of_batched_ingest_5000_events ... ok
+test_X1_replayed_scan_burst_gives_one_stock_change_per_event ... ok
+test_X2_queued_approval_is_not_shown_approved_and_is_revalidated_against_new_policy ... FAIL
+test_X2_scan_events_record_the_policy_version_they_were_captured_under ... ok
+test_X3_one_api_replica_down_other_serves_and_retry_does_not_duplicate ... ok
+test_X4_negative_scan_needs_manager_and_never_drops_below_reserved ... ok
+test_X5_summary_tables_reconcile_with_raw_data_and_are_role_protected ... ok
+
+======================================================================
+FAIL: test_X2_queued_approval_is_not_shown_approved_and_is_revalidated_against_new_policy
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/claude/omniflow/tests/test_expansion.py", line 56, in test_X2_queued_approval_is_not_shown_approved_and_is_revalidated_against_new_policy
+    self.assertTrue(out[0][1].startswith("REJECTED_BY_SERVER"), out)
+AssertionError: False is not true : [(1, 'VALIDATED_APPROVED')]
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.148s
+
+FAILED (failures=1)

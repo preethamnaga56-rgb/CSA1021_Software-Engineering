@@ -1,0 +1,16 @@
+digraph ST {graph [fontname="Helvetica" fontsize=15 bgcolor=white pad=0.2]; node [fontname="Helvetica" fontsize=14]; edge [fontname="Helvetica" fontsize=12];
+rankdir=TB; nodesep=0.9; ranksep=1.1; node [shape=box style="rounded,filled" fillcolor="#F2F2F2" width=1.3]; start [shape=circle style=filled fillcolor=black label="" width=0.15]; end [shape=doublecircle style=filled fillcolor=black label="" width=0.12];
+{rank=same; start; PLACED; PAID}
+{rank=same; CANCELLED; PACKED; DISPATCHED}
+{rank=same; DELIVERED; CLOSED; end}
+start -> PLACED [label="place order\n[stock reserved]"];
+PLACED -> PAID [label="verified callback\n[amount matches]"];
+PAID -> PACKED [label="confirm pick\n[picker, same region]"];
+PACKED -> DISPATCHED [label="dispatch\n[payment record exists]"];
+DISPATCHED -> DELIVERED [label="courier delivered"];
+DELIVERED -> CLOSED [label="return window ends\nor refund executed"];
+CLOSED -> end;
+PLACED -> CANCELLED [label="customer cancel\nor 15-min expiry"];
+CANCELLED -> PAID [style=dashed label="late payment, reason=EXPIRED\n[re-reserve succeeds] (revision R1)" constraint=false];
+CANCELLED [label="CANCELLED\n(late payment without stock:\nsystem refund request, still Cancelled)"];
+}

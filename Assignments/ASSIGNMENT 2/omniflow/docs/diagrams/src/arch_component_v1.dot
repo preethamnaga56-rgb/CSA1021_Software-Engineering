@@ -1,0 +1,27 @@
+digraph COMP {graph [fontname="Helvetica" fontsize=15 bgcolor=white pad=0.2]; node [fontname="Helvetica" fontsize=14]; edge [fontname="Helvetica" fontsize=12];
+rankdir=LR; node [shape=box style="rounded,filled" fillcolor="#F2F2F2"]; newrank=true;
+UI [label="Customer / staff UI\n(React)"]; SC [label="Warehouse scanner\nnode"]; RP [label="Reverse proxy\nTLS, routing"];
+subgraph cluster_app { label="Modular application (FastAPI) - one deployable"; style=solid; fontsize=11;
+"Identity & Access" [fillcolor=white];
+"Order & Checkout" [fillcolor=white];
+"Stock & Reservation" [fillcolor=white];
+"Payment Callback" [fillcolor=white];
+"Refund Approval" [fillcolor=white];
+"Fulfilment & Tracking" [fillcolor=white];
+"Regional Policy" [fillcolor=white];
+"Reporting" [fillcolor=white];
+}
+DB [label="PostgreSQL\norders, stock, payment events,\nrefunds, audit, outbox" shape=cylinder fillcolor=white]; WK [label="Integration Worker\n(outbox poller)"];
+PGW [label="Payment gateway\n(external, sandbox)" fillcolor="#D9D9D9"]; CO [label="Courier API\n(external)" fillcolor="#D9D9D9"]; CI [label="GitHub + CI\nbuild, test, images" fillcolor="#D9D9D9"];
+UI -> RP [label="HTTPS"]; SC -> RP [label="HTTPS (batch)"]; RP -> "Identity & Access" [label="REST"];
+"Identity & Access" -> DB [arrowhead=none color="#808080"];
+"Order & Checkout" -> DB [arrowhead=none color="#808080"];
+"Stock & Reservation" -> DB [arrowhead=none color="#808080"];
+"Payment Callback" -> DB [arrowhead=none color="#808080"];
+"Refund Approval" -> DB [arrowhead=none color="#808080"];
+"Fulfilment & Tracking" -> DB [arrowhead=none color="#808080"];
+"Regional Policy" -> DB [arrowhead=none color="#808080"];
+"Reporting" -> DB [arrowhead=none color="#808080"];
+"Order & Checkout" -> "Stock & Reservation" [style=dashed label="in-process call"]; "Payment Callback" -> "Order & Checkout" [style=dashed];
+DB -> WK [label="poll outbox" dir=both]; WK -> CO [label="book shipment"]; WK -> PGW [label="refund"]; PGW -> RP [label="signed callback" style=dashed]; CI -> RP [style=dotted label="deploy" arrowhead=none];
+}

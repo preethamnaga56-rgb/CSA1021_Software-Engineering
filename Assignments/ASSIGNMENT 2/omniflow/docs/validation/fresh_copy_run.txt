@@ -1,0 +1,26 @@
+# Validation results (test model, synthetic data)
+
+Generated 2026-11-15 05:21 UTC on Python 3.12.3 / SQLite 3.45.1 / Linux.
+
+| Scenario | Description | Checks | Result |
+|---|---|---|---|
+| S1 | Two customers buy the last unit | 2 | PASS |
+| S2 | Repeated payment callback while the original is processed | 2 | PASS |
+| S3 | Approved refund fails at gateway, retry; unapproved refund cannot execute | 2 | PASS |
+| S4 | Dispatch without payment or pick; stale version | 3 | PASS |
+| S5 | Courier fails, times out after creating, then succeeds | 1 | PASS |
+| S6 | Customer/agent approve refund; cross-customer access; masked support view | 4 | PASS |
+| S7 | Payment after reservation expiry; extra payment for a paid order | 4 | PASS |
+| S8 | Bad signature, wrong amount, browser redirect, client price | 3 | PASS |
+| X1 | Replayed scan burst after reconnect; bounded buffer | 3 | PASS |
+| X2 | Policy lowered while an approval is queued offline | 2 | PASS |
+| X3 | One API replica unavailable; client retry | 1 | PASS |
+| X4 | Stale and negative scan corrections need a human | 1 | PASS |
+| X5 | Reports from summary tables reconcile and are role-protected | 1 | PASS |
+
+**29 checks run, 0 failures, 0 errors.**
+
+RESULT: PASS (0 problems, 4 notes)
+Ran 29 tests in 0.485s
+
+OK

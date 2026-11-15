@@ -1,0 +1,10 @@
+digraph DEP {graph [fontname="Helvetica" fontsize=15 bgcolor=white pad=0.2]; node [fontname="Helvetica" fontsize=14]; edge [fontname="Helvetica" fontsize=12];
+rankdir=TB; node [shape=box style="filled" fillcolor="#F2F2F2"];
+subgraph cluster_c { label="Client devices"; CL [label="Browsers, scanners" fillcolor=white]; }
+subgraph cluster_h { label="Single host (Docker network) - initial release"; fontsize=11;
+NG [label="nginx container\n:443 -> api"]; A1 [label="api container 1\nstateless FastAPI"]; A2 [label="api container 2\n(added only after profiling)" style="dashed,filled" fillcolor=white]; W [label="worker container\noutbox sender"]; PGC [label="postgres container\npersistent volume\nnightly backup" shape=cylinder fillcolor=white];
+}
+subgraph cluster_x { label="External systems"; GWX [label="Payment gateway" fillcolor="#D9D9D9"]; CRX [label="Courier API" fillcolor="#D9D9D9"]; }
+REG [label="Image registry / GitHub Actions" fillcolor="#D9D9D9"];
+CL -> NG [label="HTTPS"]; NG -> A1; NG -> A2 [style=dashed]; A1 -> PGC [label="SQL"]; A2 -> PGC [style=dashed]; W -> PGC [label="SQL"]; W -> CRX; W -> GWX; GWX -> NG [style=dashed label="callback"]; REG -> NG [style=dotted label="docker pull" arrowhead=none constraint=false];
+}

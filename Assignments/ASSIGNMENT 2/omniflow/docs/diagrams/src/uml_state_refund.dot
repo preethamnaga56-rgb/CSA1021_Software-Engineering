@@ -1,0 +1,14 @@
+digraph RS {graph [fontname="Helvetica" fontsize=15 bgcolor=white pad=0.2]; node [fontname="Helvetica" fontsize=14]; edge [fontname="Helvetica" fontsize=12];
+rankdir=TB; nodesep=0.8; ranksep=1.0; node [shape=box style="rounded,filled" fillcolor="#F2F2F2" width=1.3]; start [shape=circle style=filled fillcolor=black label="" width=0.15]; end [shape=doublecircle style=filled fillcolor=black label="" width=0.12];
+{rank=same; start; REQUESTED}
+{rank=same; REJECTED; APPROVED}
+{rank=same; FAILED; EXECUTED}
+start -> REQUESTED [label="agent / customer request,\nor system (unfulfillable payment)"];
+REQUESTED -> APPROVED [label="approve [role OK for CURRENT limit,\nrequester != approver]"];
+REQUESTED -> REJECTED [label="reject"];
+APPROVED -> EXECUTED [label="gateway ok\n[approved_by not null]"];
+APPROVED -> FAILED [label="gateway error: order stays Delivered,\nno ledger entry (= rollback)"];
+FAILED -> EXECUTED [label="retry succeeds (approval kept)"];
+FAILED -> FAILED [tailport=s headport=s label="retry fails: attempts+1 (>=3: manual handling)"];
+EXECUTED -> end; REJECTED -> end;
+}

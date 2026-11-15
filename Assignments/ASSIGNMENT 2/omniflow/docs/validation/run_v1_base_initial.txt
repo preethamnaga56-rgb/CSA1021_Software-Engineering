@@ -1,0 +1,56 @@
+test_S1_last_unit_sequential ... ok
+test_S1_last_unit_twelve_concurrent_buyers ... ok
+test_S2_duplicate_callback_arrives_while_original_in_flight ... ok
+test_S2_duplicate_callback_ten_sequential_repeats ... ok
+test_S3_approved_refund_fails_then_retries_without_new_approval ... ok
+test_S3_unapproved_refund_cannot_execute ... ok
+test_S4_dispatch_without_payment_or_pick_is_rejected ... ok
+test_S4_second_guard_checks_payment_record_even_if_state_were_forged ... ok
+test_S4_stale_version_cannot_overwrite_accepted_state ... ok
+test_S5_courier_failure_then_timeout_after_create_then_success ... FAIL
+test_S6_cross_customer_read_rejected_and_support_view_is_masked ... ok
+test_S6_customer_and_agent_cannot_approve_refund ... ok
+test_S6_manager_cannot_approve_above_limit_and_requester_cannot_self_approve ... ok
+test_S6_ui_role_selector_has_no_effect_on_server_identity ... ok
+test_S7_late_payment_after_expiry_when_stock_remains_re_reserves ... FAIL
+test_S7_late_payment_after_expiry_when_unit_was_resold ... FAIL
+test_S7_reservation_expiry_releases_exactly_once ... ok
+test_S8_bad_signature_and_amount_mismatch_rejected_without_effect ... ok
+test_S8_browser_success_redirect_cannot_mark_paid ... ok
+test_S8_price_and_tax_server_side_and_client_price_rejected ... ok
+
+======================================================================
+FAIL: test_S5_courier_failure_then_timeout_after_create_then_success
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/claude/omniflow/tests/test_scenarios.py", line 147, in test_S5_courier_failure_then_timeout_after_create_then_success
+    self.assertEqual(courier.create_calls, 2)                            # 2nd create attempt only in timeout case
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_S7_late_payment_after_expiry_when_stock_remains_re_reserves
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/claude/omniflow/tests/test_scenarios.py", line 214, in test_S7_late_payment_after_expiry_when_stock_remains_re_reserves
+    self.assertEqual(res["result"], "PAID_AFTER_EXPIRY")
+AssertionError: 'IGNORED_STATE' != 'PAID_AFTER_EXPIRY'
+- IGNORED_STATE
++ PAID_AFTER_EXPIRY
+
+
+======================================================================
+FAIL: test_S7_late_payment_after_expiry_when_unit_was_resold
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/claude/omniflow/tests/test_scenarios.py", line 202, in test_S7_late_payment_after_expiry_when_unit_was_resold
+    self.assertEqual(res["result"], "NEEDS_REFUND")
+AssertionError: 'IGNORED_STATE' != 'NEEDS_REFUND'
+- IGNORED_STATE
++ NEEDS_REFUND
+
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.247s
+
+FAILED (failures=3)

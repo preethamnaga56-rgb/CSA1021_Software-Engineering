@@ -1,0 +1,11 @@
+digraph DEP2 {graph [fontname="Helvetica" fontsize=15 bgcolor=white pad=0.2]; node [fontname="Helvetica" fontsize=14]; edge [fontname="Helvetica" fontsize=12];
+rankdir=TB; node [shape=box style="filled" fillcolor="#F2F2F2"];
+subgraph cluster_r { label="12 regions - clients"; fontsize=11; CL [label="Browsers (500 users planned)\nScanner nodes with bounded local buffer\n(events: node id + event id + observed_at + policy version)" fillcolor=white]; }
+subgraph cluster_h { label="Central deployment (still one database) - Day-4 redesign"; fontsize=11;
+NG [label="nginx / load balancer\nrate limits, batch endpoint /scan-events"]; A1 [label="api replica 1"]; A2 [label="api replica 2"]; A3 [label="api replica 3\n(only if profiling shows CPU-bound)" style="dashed,filled" fillcolor=white];
+PB [label="PgBouncer\nconnection pool" fillcolor=white]; DB [label="PostgreSQL primary\n+ regional_policy versions\n+ scan_events (PK node_id,event_id)\n+ jobs table (SKIP LOCKED)\n+ summary tables" shape=cylinder fillcolor=white];
+W [label="worker container(s)\noutbox + scan-batch jobs"]; RF [label="report refresher\n(scheduled, every 5 min)"]; BK [label="WAL archive + nightly backup" shape=note fillcolor=white]; RR [label="read replica\n(ONLY if P5 test fails)" style="dashed,filled" shape=cylinder fillcolor=white];
+}
+subgraph cluster_x { label="External"; GWX [label="Payment gateway" fillcolor="#D9D9D9"]; CRX [label="Courier API" fillcolor="#D9D9D9"]; }
+CL -> NG [label="HTTPS"]; NG -> A1; NG -> A2; NG -> A3 [style=dashed]; A1 -> PB; A2 -> PB; A3 -> PB [style=dashed]; PB -> DB; W -> DB [label="SQL"]; RF -> DB; DB -> BK; DB -> RR [style=dashed label="stream"]; W -> CRX; W -> GWX; GWX -> NG [style=dashed label="callback"];
+}
