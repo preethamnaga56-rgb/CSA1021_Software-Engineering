@@ -1,0 +1,25 @@
+Key,Type,Summary,Priority,Status (end of simulation),Epic/Parent,Story points,Key labels
+KAN-14,Epic,OFP | Order and Stock Core,High,To Do,,-,Failed orders from overselling
+KAN-15,Epic,OFP | Payments and Refund Governance,High,To Do,,-,
+KAN-16,Epic,OFP | Warehouse Fulfilment and Tracking,High,To Do,,-,
+KAN-17,Epic,OFP | Reproducible Delivery and Support,High,To Do,,-,
+KAN-18,Story,S01 | Role-based staff access,High,Done,KAN-17,3,sprint-1;must-have
+KAN-19,Story,S02 | Browse catalogue and maintain cart,High,Done,KAN-14,3,sprint-1;must-have
+KAN-20,Story,S03 | Place order with stock reservation,Highest,Done,KAN-14,5,sprint-1;must-have
+KAN-21,Story,S04 | Retry payment safely without double charge,Highest,To Do,KAN-15,5,sprint-2;must-have
+KAN-22,Story,S05 | Generate warehouse pick list,High,To Do,KAN-16,3,sprint-2;must-have
+KAN-23,Story,S06 | Confirm pick and dispatch order,High,To Do,KAN-16,3,sprint-3;must-have
+KAN-24,Story,S07 | Show customer order tracking,High,To Do,KAN-16,3,sprint-3;must-have
+KAN-25,Story,S08 | Request a return,High,To Do,KAN-15,3,sprint-3;must-have
+KAN-26,Story,S09 | Approve and audit refund,Highest,To Do,KAN-15,5,sprint-3;must-have
+KAN-27,Story,S10 | Build and release verification,High,In Progress,KAN-17,3,sprint-1;must-have
+KAN-28,Story,S11 | Support order lookup,High,To Do,KAN-17,3,sprint-4;should-have
+KAN-29,Story,S12 | Low-stock alert,Medium,To Do,KAN-14,2,sprint-1;should-have
+KAN-30,Story,S13 | Sales and fulfilment summary,Low,To Do,KAN-17,2,deferred;could-have
+KAN-37,Epic,OFP | Regional Rollout and Two-Team Coordination,High,To Do,,-,task-6-redesign
+KAN-38,Story,"R01 | Shared order, payment and address contract",Highest,To Do,KAN-37,3,sprint-2-revised;team-a
+KAN-39,Story,"R02 | Region policy table for tax, shipping, refund limits",Highest,To Do,KAN-37,2,sprint-2-revised;team-b
+KAN-40,Story,R03 | Region-aware pricing and shipping,High,To Do,KAN-37,5,sprint-3-revised;team-a
+KAN-43,Story,R04 | Region-specific refund approval thresholds,Highest,To Do,KAN-37,3,sprint-3-revised;team-b
+KAN-41,Story,R05 | Payment adapter knowledge transfer,Highest,To Do,KAN-37,2,sprint-2-revised;team-b
+KAN-42,Story,R06 | Integrated two-region demo script,High,To Do,KAN-37,2,sprint-2-revised;team-a;team-b
