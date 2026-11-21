@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicScale | Municipal Public Service Platform & Predictive Autoscaling</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="civil-light-theme">
+
+    <div class="app-layout">
+        <!-- LEFT NAVIGATION SIDEBAR (Solid Pure White #FFFFFF with subtle #FDF9E2 border) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <div class="logo-core">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2" stroke="#10B981" fill="rgba(16,185,129,0.12)"></polygon>
+                            <polyline points="2 17 12 22 22 17" stroke="#3B82F6"></polyline>
+                            <polyline points="2 12 12 17 22 12" stroke="#EAB308"></polyline>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <div class="brand-title">CIVIC<span>SCALE</span></div>
+                        <div class="brand-badge">PUBLIC CIVIL SERVICE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">CORE PLATFORM</div>
+                <button class="nav-tab active" data-tab="tab-dashboard">
+                    <span class="tab-icon">📊</span>
+                    <span class="tab-text">Analytical Dashboard</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-public-portal">
+                    <span class="tab-icon">🏛</span>
+                    <span class="tab-text">Public 311 Records Desk</span>
+                    <span class="tab-pill">260+</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-predictive-ops">
+                    <span class="tab-icon">⚡</span>
+                    <span class="tab-text">Predictive Cloud HPA</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-transparency">
+                    <span class="tab-icon">📈</span>
+                    <span class="tab-text">Civic Transparency & SLA</span>
+                </button>
+                <button class="nav-tab" data-tab="tab-calendar">
+                    <span class="tab-icon">📅</span>
+                    <span class="tab-text">Civil Service Calendar</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar Summary Widget -->
+            <div class="sidebar-quick-stats">
+                <div class="sq-title">CLUSTER CAPACITY</div>
+                <div class="sq-progress-bar">
+                    <div class="sq-progress-fill" id="sidebar-cpu-fill" style="width: 38%;"></div>
+                </div>
+                <div class="sq-meta">
+                    <span id="sidebar-pods-text">8 / 24 Replicas Active</span>
+                    <span class="sq-status-dot"></span>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="system-status-box">
+                    <div class="status-indicator">
+                        <span class="pulse-dot"></span>
+                        <span class="status-label">Ingress Gateway</span>
+                    </div>
+                    <span class="status-val">OPTIMAL</span>
+                </div>
+                <a href="/docs" target="_blank" class="api-docs-link">
+                    <span>Swagger API Docs</span>
+                    <span>&rarr;</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD VIEWPORT (Dominant Pastel Green Canvas #F4F9F6) -->
+        <div class="dashboard-viewport">
+            <!-- TOPBAR: Elongated Search Bar with Crisp Dark Cursor + CTAs -->
+            <header class="topbar">
+                <div class="top-search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="top-search-input" placeholder="Search 260+ authentic 311 records by address, complaint type, agency, or ID..." class="top-search-field">
+                    <span class="search-shortcut">ESC to clear</span>
+                </div>
+
+                <div class="topbar-actions">
+                    <div class="topbar-pill">
+                        <span class="pulse-dot"></span>
+                        <span class="tb-pill-text">GATEWAY: <b>ONLINE</b></span>
+                    </div>
+
+                    <div class="topbar-clock" id="cluster-clock">--:--:-- UTC</div>
+
+                    <button class="btn-primary-cta" id="btn-open-submit-modal">
+                        <span class="btn-icon">+</span> File 311 Request
+                    </button>
+                </div>
+            </header>
+
+            <!-- MAIN CONTENT AREA -->
+            <main class="main-canvas">
+
+                <!-- ROW 1: MULTI-CARD KPI METRICS WITH RADIAL PROGRESS RINGS -->
+                <section class="kpi-grid">
+                    <!-- Card 1: Public 311 Dataset Records -->
+                    <div class="kpi-metric-card">
+                        <div class="kpi-card-content">
+                            <span class="kpi-tag">MUNICIPAL DATASET</span>
+                            <div class="kpi-number-row">
+                                <span class="kpi-number" id="kpi-total-records">261</span>
+                                <span class="kpi-unit">records</span>
+                            </div>
+                            <div class="kpi-footnote" id="kpi-foot-records">100% In-Memory Indexed</div>
+                        </div>
+                        <div class="radial-ring-wrap">
+                            <svg class="radial-ring" viewBox="0 0 64 64">
+                                <circle class="ring-bg" cx="32" cy="32" r="26"></circle>
+                                <circle class="ring-fill ring-mint" cx="32" cy="32" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                            </svg>
+                            <span class="radial-ring-center text-mint">100%</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Public Resolution Rate -->
+                    <div class="kpi-metric-card">
+                        <div class="kpi-card-content">
+                            <span class="kpi-tag">PUBLIC RESOLUTION RATE</span>
+                            <div class="kpi-number-row">
+                                <span class="kpi-number" id="kpi-resolution-rate">98.4%</span>
+                                <span class="kpi-unit">resolved</span>
+                            </div>
+                            <div class="kpi-footnote" id="kpi-resolved-sub">256 of 260 closed within SLA</div>
+                        </div>
+                        <div class="radial-ring-wrap">
+                            <svg class="radial-ring" viewBox="0 0 64 64">
+                                <circle class="ring-bg" cx="32" cy="32" r="26"></circle>
+                                <circle class="ring-fill ring-mint" id="ring-fill-res" cx="32" cy="32" r="26" stroke-dasharray="163.36" stroke-dashoffset="2.6"></circle>
+                            </svg>
+                            <span class="radial-ring-center text-mint">98%</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Workload Ingestion Rate -->
+                    <div class="kpi-metric-card">
+                        <div class="kpi-card-content">
+                            <span class="kpi-tag">WORKLOAD INGESTION</span>
+                            <div class="kpi-number-row">
+                                <span class="kpi-number" id="kpi-rps">0.0</span>
+                                <span class="kpi-unit">req/sec</span>
+                            </div>
+                            <div class="kpi-footnote">
+                                <div class="progress-bar-bg"><div class="progress-bar-fill" id="kpi-cpu-bar" style="width: 25%;"></div></div>
+                            </div>
+                        </div>
+                        <div class="radial-ring-wrap">
+                            <svg class="radial-ring" viewBox="0 0 64 64">
+                                <circle class="ring-bg" cx="32" cy="32" r="26"></circle>
+                                <circle class="ring-fill ring-blue" id="ring-fill-rps" cx="32" cy="32" r="26" stroke-dasharray="163.36" stroke-dashoffset="81.68"></circle>
+                            </svg>
+                            <span class="radial-ring-center text-blue">RPS</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Dynamic Worker Pods -->
+                    <div class="kpi-metric-card">
+                        <div class="kpi-card-content">
+                            <span class="kpi-tag">DYNAMIC WORKER PODS</span>
+                            <div class="kpi-number-row">
+                                <span class="kpi-number" id="kpi-pods-count">0</span>
+                                <span class="kpi-unit">active replicas</span>
+                            </div>
+                            <div class="kpi-footnote" id="kpi-pod-status">Scaled via Quantile Gradient Ensemble</div>
+                        </div>
+                        <div class="radial-ring-wrap">
+                            <svg class="radial-ring" viewBox="0 0 64 64">
+                                <circle class="ring-bg" cx="32" cy="32" r="26"></circle>
+                                <circle class="ring-fill ring-gold" id="ring-fill-pods" cx="32" cy="32" r="26" stroke-dasharray="163.36" stroke-dashoffset="108.9"></circle>
+                            </svg>
+                            <span class="radial-ring-center text-gold">HPA</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ROW 2: ANALYTICAL DASHBOARD GRID (Predictive Capacity Forecast + Civil Service Calendar) -->
+                <section class="dashboard-grid-2col">
+                    <!-- Left Card: High-End Predictive Workload Forecast & Simulator -->
+                    <div class="container-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <span class="icon-chip chip-blue">⚡</span>
+                                <div>
+                                    <h3>High-End Predictive Workload Forecast</h3>
+                                    <p>Quantile Gradient Boosted Ensemble projecting citizen traffic 15 min ahead with Pinball Uncertainty Bounds</p>
+                                </div>
+                            </div>
+                            <div class="trend-badge" id="trend-badge">TREND: STABLE</div>
+                        </div>
+
+                        <!-- Scenario Controller Bar -->
+                        <div class="simulation-controller-bar">
+                            <div class="sim-ctrl-label">
+                                <strong>Workload Injector:</strong>
+                            </div>
+                            <div class="scenario-buttons">
+                                <button class="btn-scenario active" data-scenario="normal">🟢 Normal (75 RPS)</button>
+                                <button class="btn-scenario" data-scenario="morning_rush">🟡 Morning Rush (320 RPS)</button>
+                                <button class="btn-scenario" data-scenario="storm_emergency">🟠 Storm (640 RPS)</button>
+                                <button class="btn-scenario" data-scenario="tax_deadline">🔴 Tax (950 RPS)</button>
+                            </div>
+                            <button class="btn-chaos" id="btn-trigger-chaos" title="Simulate abrupt worker node failure">
+                                💥 Crash Pod
+                            </button>
+                        </div>
+
+                        <!-- ML Accuracy Metrics Cards -->
+                        <div class="ml-accuracy-grid">
+                            <div class="ml-accuracy-card">
+                                <div class="acc-label">R² SCORE (FIT)</div>
+                                <div class="acc-val text-mint" id="acc-r2">0.962</div>
+                                <div class="acc-desc">Variance Explained</div>
+                            </div>
+                            <div class="ml-accuracy-card">
+                                <div class="acc-label">MAE</div>
+                                <div class="acc-val text-blue" id="acc-mae">2.1 <span class="acc-unit">rps</span></div>
+                                <div class="acc-desc">Mean Absolute Error</div>
+                            </div>
+                            <div class="ml-accuracy-card">
+                                <div class="acc-label">RMSE</div>
+                                <div class="acc-val" id="acc-rmse">3.2 <span class="acc-unit">rps</span></div>
+                                <div class="acc-desc">Root Mean Squared</div>
+                            </div>
+                            <div class="ml-accuracy-card">
+                                <div class="acc-label">MAPE</div>
+                                <div class="acc-val text-gold" id="acc-mape">3.4<span class="acc-unit">%</span></div>
+                                <div class="acc-desc">Mean Abs % Error</div>
+                            </div>
+                            <div class="ml-accuracy-card">
+                                <div class="acc-label">95% COVERAGE</div>
+                                <div class="acc-val text-mint" id="acc-coverage">96.4<span class="acc-unit">%</span></div>
+                                <div class="acc-desc">Quantile Band Fit</div>
+                            </div>
+                        </div>
+
+                        <!-- Canvas Line Chart -->
+                        <div class="chart-container large">
+                            <div class="chart-header-row">
+                                <span class="chart-legend-tag navy">Ensemble Forecast (RPS)</span>
+                                <span class="chart-legend-tag gold">95% Quantile Bounds (Pinball Loss)</span>
+                            </div>
+                            <canvas id="predictive-canvas-chart" width="600" height="205"></canvas>
+                        </div>
+
+                        <div class="ml-diagnostics-row">
+                            <div class="diagnostics-subgroup">
+                                <span class="diag-title">Meta-Ensemble Blend:</span>
+                                <div class="weights-pills" id="ml-weights-pills">
+                                    <span class="weight-pill gbm" id="weight-gbm">GBM: 38%</span>
+                                    <span class="weight-pill rf" id="weight-rf">RF: 37%</span>
+                                    <span class="weight-pill ridge" id="weight-ridge">Ridge: 25%</span>
+                                </div>
+                            </div>
+                            <div class="diagnostics-subgroup">
+                                <span class="diag-title">Top Predictive Drivers:</span>
+                                <div class="feature-chips" id="ml-feature-chips">
+                                    <span class="feature-chip">Max 5: 30%</span>
+                                    <span class="feature-chip">Cos Min: 29%</span>
+                                    <span class="feature-chip">Lag 1: 14%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Civil Service Calendar & Cloud Pod Allocation -->
+                    <div class="dashboard-side-col">
+                        <!-- Civil Service Calendar Placement -->
+                        <div class="container-card calendar-card">
+                            <div class="card-header">
+                                <div class="card-title-group">
+                                    <span class="icon-chip chip-gold">📅</span>
+                                    <div>
+                                        <h3>Civil Service Schedule</h3>
+                                        <p>Municipal audits, maintenance & queue sweeps</p>
+                                    </div>
+                                </div>
+                                <div class="cal-nav-controls">
+                                    <button class="cal-btn-arrow" id="cal-prev-btn" aria-label="Previous Month">&lsaquo;</button>
+                                    <span class="cal-month-display" id="cal-month-display">November 2026</span>
+                                    <button class="cal-btn-arrow" id="cal-next-btn" aria-label="Next Month">&rsaquo;</button>
+                                </div>
+                            </div>
+
+                            <!-- Calendar Day Names -->
+                            <div class="cal-weekdays">
+                                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                            </div>
+
+                            <!-- Interactive Calendar Grid -->
+                            <div class="cal-days-grid" id="calendar-days-grid">
+                                <!-- Populated dynamically by JavaScript -->
+                            </div>
+
+                            <!-- Milestones List -->
+                            <div class="cal-milestone-list">
+                                <div class="cal-milestone-item">
+                                    <span class="m-marker marker-mint"></span>
+                                    <div class="m-content">
+                                        <div class="m-headline">Today (Nov 3) • 311 Ingress Auto-Triage & Health Sweep</div>
+                                        <div class="m-sub">09:00 UTC • Sub-second priority routing enabled</div>
+                                    </div>
+                                </div>
+                                <div class="cal-milestone-item">
+                                    <span class="m-marker marker-blue"></span>
+                                    <div class="m-content">
+                                        <div class="m-headline">Nov 5 • Quantile Autoregressive Weight Rebalance</div>
+                                        <div class="m-sub">14:00 UTC • Retrain 18-feature model parameters</div>
+                                    </div>
+                                </div>
+                                <div class="cal-milestone-item">
+                                    <span class="m-marker marker-gold"></span>
+                                    <div class="m-content">
+                                        <div class="m-headline">Nov 15 • Bi-Weekly Municipal SLA Compliance Report</div>
+                                        <div class="m-sub">District equitable resource allocation audit</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Cloud Pod Allocation Card -->
+                        <div class="container-card pod-topology-card">
+                            <div class="card-header">
+                                <div class="card-title-group">
+                                    <span class="icon-chip chip-mint">☸</span>
+                                    <div>
+                                        <h3>Pod Topology & HPA Allocation</h3>
+                                        <p>Real-time autonomous replicas across 3 availability zones</p>
+                                    </div>
+                                </div>
+                                <div class="panel-badge" id="active-pod-count-badge">Active Replicas</div>
+                            </div>
+
+                            <!-- Mini Chart Load vs Replicas -->
+                            <div class="chart-container mini">
+                                <div class="chart-header-row">
+                                    <span class="chart-legend-tag navy">RPS Load</span>
+                                    <span class="chart-legend-tag gold">Pod Replicas</span>
+                                </div>
+                                <canvas id="ops-canvas-chart" width="400" height="130"></canvas>
+                            </div>
+
+                            <!-- Node Topology Grid -->
+                            <div class="cluster-nodes-container" id="nodes-container">
+                                <!-- Populated dynamically -->
+                            </div>
+
+                            <div class="hpa-summary-card">
+                                <div class="hpa-summary-row">
+                                    <span><b>Action:</b> <span id="hpa-action-text">STEADY</span></span>
+                                    <span><b>Cooldown:</b> <span id="hpa-cooldown-text">0.0s</span></span>
+                                </div>
+                                <div class="hpa-summary-desc" id="hpa-reason-text">Capacity matches public demand envelope.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ROW 3: PUBLIC 311 SERVICE REQUESTS & DATA ENGINE (260+ Authentic Records) -->
+                <section class="container-card" id="tab-public-portal">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="icon-chip chip-mint">🏛</span>
+                            <div>
+                                <h3>Public Civic Service Requests & 311 Open Records</h3>
+                                <p>Real-time citizen request lookup, live SLA tracking, sorting, instant export & zero-friction filing (260+ Verified Public Records)</p>
+                            </div>
+                        </div>
+                        <div class="header-action-group">
+                            <div class="export-btn-group">
+                                <button class="btn-export" id="btn-export-csv" title="Export filtered dataset to CSV">
+                                    📥 Export CSV
+                                </button>
+                                <button class="btn-export" id="btn-export-json" title="Export filtered dataset to JSON">
+                                    📄 Export JSON
+                                </button>
+                            </div>
+                            <button class="btn-ghost" id="btn-reset-filters">Reset Filters</button>
+                        </div>
+                    </div>
+
+                    <!-- Search & Multi-Filter Toolbar -->
+                    <div class="filter-toolbar">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="public-search-input" placeholder="Search by Street Address, Request ID, Citizen Name, or Keyword..." class="search-input">
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Agency:</label>
+                            <select id="filter-agency" class="filter-select">
+                                <option value="ALL">All Municipal Agencies</option>
+                                <option value="DEP">DEP (Water & Environmental)</option>
+                                <option value="DOT">DOT (Transportation & Roads)</option>
+                                <option value="DOB">DOB (Buildings & Infrastructure)</option>
+                                <option value="DSNY">DSNY (Sanitation & Waste)</option>
+                                <option value="DOHMH">DOHMH (Public Health & Hygiene)</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>District:</label>
+                            <select id="filter-district" class="filter-select">
+                                <option value="ALL">All Municipal Districts</option>
+                                <option value="District 1 - Harbour Front">District 1 - Harbour Front</option>
+                                <option value="District 2 - North Ridge">District 2 - North Ridge</option>
+                                <option value="District 3 - South Gate">District 3 - South Gate</option>
+                                <option value="District 4 - Metro Center">District 4 - Metro Center</option>
+                                <option value="District 5 - Tech Corridor">District 5 - Tech Corridor</option>
+                                <option value="District 6 - East River Basin">District 6 - East River Basin</option>
+                                <option value="District 7 - Westside Parklands">District 7 - Westside Parklands</option>
+                                <option value="District 8 - University Quarter">District 8 - University Quarter</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Status:</label>
+                            <select id="filter-status" class="filter-select">
+                                <option value="ALL">All Statuses</option>
+                                <option value="RESOLVED">Resolved (Closed)</option>
+                                <option value="PROCESSING">In Progress</option>
+                                <option value="QUEUED">Queued / Dispatched</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Priority:</label>
+                            <select id="filter-priority" class="filter-select">
+                                <option value="ALL">All Priorities</option>
+                                <option value="P1_CRITICAL">🚨 P1 - Critical</option>
+                                <option value="P2_HIGH">⚠️ P2 - High</option>
+                                <option value="P3_MEDIUM">📋 P3 - Medium</option>
+                                <option value="P4_ROUTINE">ℹ️ P4 - Routine</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Sort By:</label>
+                            <select id="sort-by-select" class="filter-select">
+                                <option value="created_date:desc">Created Date (Newest)</option>
+                                <option value="created_date:asc">Created Date (Oldest)</option>
+                                <option value="priority:desc">Priority (Critical First)</option>
+                                <option value="sla_target_hours:asc">SLA Target (Urgent First)</option>
+                                <option value="elapsed_hours:desc">Elapsed Time (Highest)</option>
+                                <option value="agency:asc">Agency (A-Z)</option>
+                                <option value="status:asc">Status</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Public Dataset Table -->
+                    <div class="public-table-wrapper">
+                        <table class="public-table">
+                            <thead>
+                                <tr>
+                                    <th class="clickable-th" data-sort="service_request_id">Request ID <span class="sort-icon"></span></th>
+                                    <th class="clickable-th" data-sort="created_date">Created <span class="sort-icon">▼</span></th>
+                                    <th class="clickable-th" data-sort="agency">Agency <span class="sort-icon"></span></th>
+                                    <th>Complaint Category & Descriptor</th>
+                                    <th>Incident Address & District</th>
+                                    <th class="clickable-th" data-sort="priority">Priority <span class="sort-icon"></span></th>
+                                    <th class="clickable-th" data-sort="status">Status <span class="sort-icon"></span></th>
+                                    <th class="clickable-th" data-sort="sla_target_hours">Target SLA <span class="sort-icon"></span></th>
+                                    <th>Assigned Worker</th>
+                                </tr>
+                            </thead>
+                            <tbody id="public-table-body">
+                                <tr>
+                                    <td colspan="9" style="text-align: center; padding: 48px; color: var(--text-muted); font-size: 0.88rem;">
+                                        <div style="display: inline-flex; align-items: center; justify-content: center; gap: 14px;">
+                                            <span class="loading-spin"></span>
+                                            <span>Loading CivicScale 311 service request records and predictive telemetry...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Footer -->
+                    <div class="pagination-footer">
+                        <div class="pagination-info" id="pagination-info">Showing records 1 - 15 of 260</div>
+                        <div class="pagination-controls">
+                            <button class="btn-page" id="btn-prev-page" disabled>&larr; Previous</button>
+                            <span class="page-indicator" id="page-indicator">Page 1 of 18</span>
+                            <button class="btn-page" id="btn-next-page">Next &rarr;</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ROW 4: CIVIC TRANSPARENCY & AGENCY PERFORMANCE -->
+                <section class="dashboard-grid-2col" id="tab-transparency">
+                    <!-- Agency SLA Performance -->
+                    <div class="container-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <span class="icon-chip chip-blue">🏛</span>
+                                <div>
+                                    <h3>Municipal Agency SLA Performance</h3>
+                                    <p>Public transparency report across 260+ authentic civic 311 requests</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="agency-breakdown-list" id="agency-stats-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- District Distribution & Channels -->
+                    <div class="container-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <span class="icon-chip chip-mint">📍</span>
+                                <div>
+                                    <h3>District Distribution & Citizen Access Channels</h3>
+                                    <p>Equitable public service delivery across all municipal jurisdictions</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="district-breakdown-grid" id="district-stats-grid">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <div class="channels-box">
+                            <h4 style="font-size:0.82rem; color:var(--text-primary); font-weight:700; margin-bottom:8px;">Citizen Intake Channels</h4>
+                            <div class="channel-pills">
+                                <span class="channel-pill">📱 Mobile 311 App (42%)</span>
+                                <span class="channel-pill">💻 Civic Web Portal (34%)</span>
+                                <span class="channel-pill">📞 311 Voice Hotline (18%)</span>
+                                <span class="channel-pill">🏛 Municipal Kiosk (6%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Public Request Submission Modal -->
+    <div class="modal-overlay" id="submit-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-icon-badge">🏛</span>
+                    <div>
+                        <h4>File a Public Civic Service Request</h4>
+                        <p class="modal-subtitle">Direct municipal intake with autonomous SLA routing</p>
+                    </div>
+                </div>
+                <button class="modal-close" id="modal-submit-close-btn" aria-label="Close modal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="public-submit-form" class="citizen-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Your Full Name</label>
+                        <input type="text" id="sub-name" required placeholder="e.g. Elena Rostova" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Email</label>
+                        <input type="email" id="sub-email" required placeholder="e.g. elena@civicnet.org" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Service Category</label>
+                        <select id="sub-category" class="form-select">
+                            <option value="Water System & Sewer">💧 Water System & Sewer (DEP)</option>
+                            <option value="Street Condition & Roads">🛣 Street Condition & Roads (DOT)</option>
+                            <option value="Traffic Signals & Signs">🚦 Traffic Signals & Signs (DOT)</option>
+                            <option value="Building Permitting & Safety">🏗 Building Permitting & Safety (DOB)</option>
+                            <option value="Sanitation & Waste Cleanup">🗑 Sanitation & Waste Cleanup (DSNY)</option>
+                            <option value="Emergency Assistance">🚨 Emergency 311 Assistance (DEP)</option>
+                            <option value="Public Health Vector Alert">🏥 Public Health & Hygiene (DOHMH)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>District</label>
+                        <select id="sub-district" class="form-select">
+                            <option>District 1 - Harbour Front</option>
+                            <option>District 2 - North Ridge</option>
+                            <option>District 3 - South Gate</option>
+                            <option selected>District 4 - Metro Center</option>
+                            <option>District 5 - Tech Corridor</option>
+                            <option>District 6 - East River Basin</option>
+                            <option>District 7 - Westside Parklands</option>
+                            <option>District 8 - University Quarter</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Incident Street Address or Intersection</label>
+                    <input type="text" id="sub-address" required placeholder="e.g. 1420 Broadway & 42nd St" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label>Description of Issue</label>
+                    <textarea id="sub-summary" rows="3" required placeholder="Provide clear description of the civic issue..." class="form-textarea"></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit-action" id="btn-submit-public-ticket">
+                    Submit Public Service Request
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Request Detail Modal -->
+    <div class="modal-overlay" id="detail-modal">
+        <div class="modal-card modal-card-wide">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-icon-badge">📋</span>
+                    <div>
+                        <h4 id="detail-modal-title">Request Details</h4>
+                        <p class="modal-subtitle">Official verified 311 telemetry record</p>
+                    </div>
+                </div>
+                <button class="modal-close" id="detail-modal-close-btn" aria-label="Close modal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body" id="detail-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Global Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
